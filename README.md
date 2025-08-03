@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tier Event Showcase
 
+A Next.js 15 + Clerk + Supabase powered web app to showcase events filtered by user tier (Free, Silver, Gold, Platinum).
+
+
+
+
+
+## Tech Stack
+
+Next.js 15 (Turbopack)
+
+Clerk – Auth & user tier metadata
+
+Supabase – Database + RLS
+
+Tailwind CSS – UI Styling
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the Repo
+git clone https://github.com/YOUR_USERNAME/tier-event-showcase.git
+cd tier-event-showcase
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 2. Install Dependencies
+npm install
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Create .env.local
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bWVhc3VyZWQtYnVjay0zMS5jbGVyay5hY2NvdW50cy5kZXYk
+CLERK_SECRET_KEY=sk_test_PR4m0yCJr5aMwl2PdwXepWlf8sXcXRCcsHfLgvnTH7
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+NEXT_PUBLIC_SUPABASE_URL=https://ofeetehtzxnwebdjkjor.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mZWV0ZWh0enhud2ViZGpram9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwMzA1NjcsImV4cCI6MjA2OTYwNjU2N30.-dSqRjOXwfp9vMt2-34z9YoEqSAKvBoYhYNPJgcqOJ8
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase Setup
+### 1. Create Project
 
-## Learn More
+Go to supabase.com
 
-To learn more about Next.js, take a look at the following resources:
+New Project → Set DB password and region
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. SQL Table Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open SQL Editor and run:
 
-## Deploy on Vercel
+create type tier as enum ('free', 'silver', 'gold', 'platinum');
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+create table events (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  description text,
+  event_date timestamp,
+  image_url text,
+  tier tier
+);
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Seed Events
+insert into events (title, description, event_date, image_url, tier) values
+('Free Show 1', 'Open to all', now(), '', 'free'),
+('Free Show 2', 'Everyone welcome', now(), '', 'free'),
+('Silver Concert', 'Silver tier access', now(), '', 'silver'),
+('Silver Workshop', 'Advanced silver session', now(), '', 'silver'),
+('Gold Gala', 'Exclusive to gold members', now(), '', 'gold'),
+('Gold Lounge', 'Private gold lounge', now(), '', 'gold'),
+('Platinum Premiere', 'Top-tier event', now(), '', 'platinum'),
+('Platinum Dinner', 'Private dinner event', now(), '', 'platinum');
+
+### 4. RLS Policy
+Enable RLS on events table and run:
+
+create policy "tier based access"
+on events
+for select
+using (
+  auth.jwt() -> 'publicMetadata' ->> 'tier' in (
+    'free', 'silver', 'gold', 'platinum'
+  )
+);
+## Clerk Setup
+
+Go to clerk.com
+
+Create a project
+
+Enable "JWT Template" for Supabase
+
+Add Metadata: tier with default free
+
+Copy API Keys into .env.local
+##  Run the Dev Server
+
+npm run Dev
+
+Visit: http://localhost:3000
+## Tier Upgrade
+
+Logged-in users can upgrade their tier (Free → Silver → Gold → Platinum) by clicking the Upgrade button on the homepage.
+## Deploy to Vercel
+
+Go to vercel.com
+
+Import GitHub repo
+
+Add .env.local variables in Vercel dashboard
+
+Click Deploy
+##  Created by
+
+Debabrata Nayak
+
+Mail: debabratanayakofficial1@gmail.com
+
+Mobile: 7319263150
+
+Github link:  https://github.com/Debabrata16/tier-event-showcase
